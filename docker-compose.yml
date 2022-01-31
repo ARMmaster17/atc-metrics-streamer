@@ -1,0 +1,72 @@
+version: '3'
+services:
+  atc-metrics-streamer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_SERVERS: kafka:9092
+      KAFKA_TOPIC: cache_stats
+      TO_SERVER: ${TO_SERVER}
+      TO_USER: ${TO_USER}
+      TO_PASSWORD: ${TO_PASSWORD}
+  zookeeper:
+    image: bitnami/zookeeper:3.6.2
+    ports:
+      - '2181:2181'
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+  kafka:
+    image: bitnami/kafka:2.7.0
+    depends_on:
+      - zookeeper
+    environment:
+      - KAFKA_CFG_ZOOKEEPER_CONNECT=zookeeper:2181
+      - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:9093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka:9092,EXTERNAL://localhost:9093
+      - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+    ports:
+      - "9093:9093"
+  elasticsearch:
+    container_name: elasticsearch
+    image: docker.elastic.co/elasticsearch/elasticsearch:${VERSION}
+    environment:
+      - ES_JAVA_OPTS=-Xms2g -Xmx2g
+      - xpack.license.self_generated.type=trial
+      - discovery.type=single-node
+      - ELASTIC_PASSWORD=$ELASTIC_PASSWORD
+      - xpack.security.enabled=false
+      - xpack.security.authc.api_key.enabled=false
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    restart: always
+
+  kibana:
+    container_name: kibana
+    image: docker.elastic.co/kibana/kibana:${VERSION}
+    environment:
+      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_PASSWORD=$ELASTIC_PASSWORD
+      - xpack.security.enabled=false
+      - xpack.ingestManager.fleet.tlsCheckDisabled=true
+    ports:
+      - "5601:5601"
+    depends_on:
+      - elasticsearch
+
+  logstash:
+    container_name: logstash
+    image: docker.elastic.co/logstash/logstash:${VERSION}
+    volumes:
+      - ./pipelines.yml:/usr/share/logstash/config/pipelines.yml
+      - ./pipeline/:/usr/share/logstash/pipeline/
+    environment:
+      - xpack.security.enabled=false
+      - xpack.monitoring.enabled=true
+      - CONSUMER_GROUP_ID=${CONSUMER_GROUP_ID}

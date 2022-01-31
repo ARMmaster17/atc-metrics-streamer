@@ -1,0 +1,3 @@
+- pipeline.id: cache_stats
+  path.config: "/usr/share/logstash/pipeline/cache_stats.conf"
+  pipeline.workers: 1

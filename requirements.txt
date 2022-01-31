@@ -1,0 +1,5 @@
+pytest
+kafka-python==2.0.2
+schedule==1.1.0
+Apache-TrafficControl==3.0.0
+requests==2.27.1
