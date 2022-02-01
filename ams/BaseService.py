@@ -7,6 +7,7 @@ import schedule
 import time
 import logging
 import sys
+import json
 from kafka import KafkaProducer
 
 
@@ -39,7 +40,7 @@ class BaseService:
         for tm in self.__tm_list:
             metrics = self.__tm_wrapper.get_tm_metrics(tm)
             for metric in metrics:
-                self.__kafka_producer.send(os.environ['KAFKA_TOPIC'], bytes(str(metric), encoding='utf-8'))
+                self.__kafka_producer.send(os.environ['KAFKA_TOPIC'], bytes(json.dumps(metric.get_data_dict()), encoding='utf-8'))
 
 
 if __name__ == '__main__':
