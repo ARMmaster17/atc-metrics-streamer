@@ -12,6 +12,8 @@ services:
       TO_SERVER: ${TO_SERVER}
       TO_USER: ${TO_USER}
       TO_PASSWORD: ${TO_PASSWORD}
+    volumes:
+      - ./mappings.yaml:/opt/mappings.yaml
   zookeeper:
     image: bitnami/zookeeper:3.6.2
     ports:

@@ -1,11 +1,12 @@
 class MetricsDTO:
-    def __init__(self, name: str, data: dict):
+    def __init__(self, name: str, data: dict, mappings: list):
         self.__data = dict()
-        self.__data['hostname'] = name
-        self.__data['query_time_ms'] = data['query_time_ms']
+        data['hostname'] = name
+        for mapping in mappings:
+            self.__data[mapping['output']] = data[mapping['input']]
 
     def get_data_dict(self) -> dict:
-        return self.__data # TODO: Convert to histogram object or whatever Elastic wants
+        return self.__data
 
     def __str__(self):
         return str(self.__data)

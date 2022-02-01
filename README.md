@@ -25,14 +25,12 @@ docker-compose up
 | TO_PASSWORD   | Password to authenticate with Traffic Ops.                                                  |
 
 2. Build the container with `docker build -t atc-metrics-streamer .`
-3. Run AMS with `docker run -d -e KAFKA_SERVERS -e KAFKA_TOPIC -e TO_SERVER -e TO_USER -e TO_PASSWORD atc-metrics-streamer`
+3. Run AMS with `docker run -d -e KAFKA_SERVERS -e KAFKA_TOPIC -e TO_SERVER -e TO_USER -e TO_PASSWORD -v ./mappings.yaml:/opt/mappings.yaml atc-metrics-streamer`
 
 # Usage
 ## Customizing Aggregated Metrics
-To change what metrics get sent through to Kafka, you can edit `traffic_ops/MetricsDTO.py` and modify the constructor to add new metrics. For example, this is how you would track the metric `load_average`:
-
-```python
-self.__data['load_average'] = data['load_average']
+To change what metrics get sent through to Kafka, you can edit `mappings.yaml`. This file is stored at `/opt/mappings.yaml` and read once on application startup. You can add an additional metric by adding a new entry to the file:
+```yaml
+- input: load_average
+  output: system.cpu_load_average
 ```
-
-Customizing these metrics through JSON/YAML is coming soon.

@@ -8,6 +8,7 @@ import time
 import logging
 import sys
 import json
+import yaml
 from kafka import KafkaProducer
 
 
@@ -18,6 +19,8 @@ class BaseService:
         self.__tm_wrapper = tm_wrapper
         self.__tm_list = None
         self.__kafka_producer = KafkaProducer(bootstrap_servers=os.environ['KAFKA_SERVERS'])
+        with open('/opt/mappings.yaml', 'r') as f:
+            self.__metric_mappings = yaml.load(f, Loader=yaml.FullLoader)
         schedule.every(60).seconds.do(self.__update_to_service_list)
         schedule.every(10).seconds.do(self.__publish_metrics)
 
@@ -38,7 +41,7 @@ class BaseService:
             logging.warning("No Traffic Monitors available, skipping metrics publish step")
             return
         for tm in self.__tm_list:
-            metrics = self.__tm_wrapper.get_tm_metrics(tm)
+            metrics = self.__tm_wrapper.get_tm_metrics(tm, self.__metric_mappings)
             for metric in metrics:
                 self.__kafka_producer.send(os.environ['KAFKA_TOPIC'], bytes(json.dumps(metric.get_data_dict()), encoding='utf-8'))
 

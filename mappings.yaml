@@ -1,0 +1,6 @@
+- input: query_time_ms
+  output: query_time_ms
+- input: hostname
+  output: monitor.host
+- input: load_average
+  output: cpu_load_average
