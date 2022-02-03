@@ -41,9 +41,12 @@ class BaseService:
             logging.warning("No Traffic Monitors available, skipping metrics publish step")
             return
         for tm in self.__tm_list:
-            metrics = self.__tm_wrapper.get_tm_metrics(tm, self.__metric_mappings)
-            for metric in metrics:
-                self.__kafka_producer.send(os.environ['KAFKA_TOPIC'], bytes(json.dumps(metric.get_data_dict()), encoding='utf-8'))
+            try:
+                metrics = self.__tm_wrapper.get_tm_metrics(tm, self.__metric_mappings)
+                for metric in metrics:
+                    self.__kafka_producer.send(os.environ['KAFKA_TOPIC'], bytes(json.dumps(metric.get_data_dict()), encoding='utf-8'))
+            except Exception as e:
+                logging.warning("Error publishing metrics for Traffic Monitor %s: %s (skipping)", tm.get_fqdn(), e)
 
 
 if __name__ == '__main__':
