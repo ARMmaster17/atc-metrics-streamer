@@ -1,6 +1,20 @@
+- input: type
+  output: type
+- input: load_average
+  output: load_average
 - input: query_time_ms
   output: query_time_ms
-- input: hostname
-  output: monitor.host
-- input: load_average
-  output: cpu_load_average
+- input: health_time_ms
+  output: health_time_ms
+- input: stat_time_ms
+  output: stat_time_ms
+- input: stat_span_ms
+  output: stat_span_ms
+- input: health_span_ms
+  output: health_span_ms
+- input: bandwidth_kbps
+  output: bandwidth_kbps
+- input: bandwidth_capacity_kbps
+  output: bandwidth_capacity_kbps
+- input: connection_count
+  output: connection_count
