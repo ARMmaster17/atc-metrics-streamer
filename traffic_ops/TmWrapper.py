@@ -10,7 +10,7 @@ class TmWrapper:
 
     def get_tm_metrics(self, tm_instance: TrafficMonitorDTO, metric_mappings: list) -> dict:
         tm_url = 'http://{}/api/cache-statuses'.format(tm_instance.get_fqdn())
-        result = requests.get(tm_url)
+        result = requests.get(tm_url, timeout=5)
         results = []
         if result.status_code != 200:
             raise Exception('Error getting cache status from Traffic Monitor: {}'.format(result.status_code))
