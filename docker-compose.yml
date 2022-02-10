@@ -70,3 +70,15 @@ services:
       - xpack.security.enabled=false
       - xpack.monitoring.enabled=true
       - CONSUMER_GROUP_ID=${CONSUMER_GROUP_ID}
+
+  heartbeat:
+    container_name: heartbeat
+    image: docker.elastic.co/beats/heartbeat:${VERSION}
+    environment:
+      - setup.kibana.host=kibana:5601
+      - output.elasticsearch.hosts=elasticsearch:9200
+    depends_on:
+      - elasticsearch
+    restart: always
+    ports:
+      - "5044:5044"

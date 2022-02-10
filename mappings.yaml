@@ -1,3 +1,5 @@
+- input: hostname
+  output: hostname
 - input: type
   output: type
 - input: load_average
@@ -18,3 +20,9 @@
   output: bandwidth_capacity_kbps
 - input: connection_count
   output: connection_count
+- input: combined_available
+  output: combined_available
+- input: check_time
+  output: check_time
+- input: next_check
+  output: next_check
