@@ -40,9 +40,10 @@ class BaseService:
         if self.__tm_list is None:
             logging.warning("No Traffic Monitors available, skipping metrics publish step")
             return
+        checked_hostnames = []
         for tm in self.__tm_list:
             try:
-                metrics = self.__tm_wrapper.get_tm_metrics(tm, self.__metric_mappings)
+                metrics = self.__tm_wrapper.get_tm_metrics(tm, self.__metric_mappings, checked_hostnames)
                 for metric in metrics:
                     self.__kafka_producer.send(os.environ['KAFKA_TOPIC'], bytes(json.dumps(metric.get_data_dict()), encoding='utf-8'))
             except Exception as e:

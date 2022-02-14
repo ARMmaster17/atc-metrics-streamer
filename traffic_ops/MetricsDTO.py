@@ -12,6 +12,9 @@ class MetricsDTO:
     def get_data_dict(self) -> dict:
         return self.__data
 
+    def get_hostname(self) -> str:
+        return self.__data['hostname']
+
     def __str__(self):
         return str(self.__data)
 
