@@ -9,6 +9,7 @@ import logging
 import sys
 import json
 import yaml
+import traceback
 from kafka import KafkaProducer
 
 
@@ -18,6 +19,7 @@ class BaseService:
         self.__to_service = to_wrapper
         self.__tm_wrapper = tm_wrapper
         self.__tm_list = None
+        self.__cg_dict = None
         self.__kafka_producer = KafkaProducer(bootstrap_servers=os.environ['KAFKA_SERVERS'])
         with open('/opt/mappings.yaml', 'r') as f:
             self.__metric_mappings = yaml.load(f, Loader=yaml.FullLoader)
@@ -33,7 +35,7 @@ class BaseService:
 
     def __update_to_service_list(self):
         logging.debug("Updating Traffic Ops list")
-        self.__tm_list = self.__to_service.get_traffic_monitors()
+        self.__tm_list, self.__cg_dict = self.__to_service.get_trafficops_data()
 
     def __publish_metrics(self):
         logging.debug("Publishing metrics")
@@ -43,11 +45,13 @@ class BaseService:
         checked_hostnames = []
         for tm in self.__tm_list:
             try:
-                metrics = self.__tm_wrapper.get_tm_metrics(tm, self.__metric_mappings, checked_hostnames)
+                metrics = self.__tm_wrapper.get_tm_metrics(tm, self.__metric_mappings, checked_hostnames, self.__cg_dict[tm.get_cachegroup()])
                 for metric in metrics:
                     self.__kafka_producer.send(os.environ['KAFKA_TOPIC'], bytes(json.dumps(metric.get_data_dict()), encoding='utf-8'))
             except Exception as e:
                 logging.warning("Error publishing metrics for Traffic Monitor %s: %s (skipping)", tm.get_fqdn(), e)
+                # TODO: Remove this
+                traceback.print_exception(type(e), e, e.__traceback__)
 
 
 if __name__ == '__main__':

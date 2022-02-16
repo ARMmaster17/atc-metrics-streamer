@@ -26,3 +26,9 @@
   output: check_time
 - input: next_check
   output: next_check
+- input: obv_name
+  output: obv_name
+- input: obv_coord
+  output: obv_coord
+- input: obv_location
+  output: obv_location
