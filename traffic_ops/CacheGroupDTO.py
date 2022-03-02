@@ -8,4 +8,4 @@ class CacheGroupDTO:
         return self.__name
 
     def getCoords(self):
-        return [self.coords_lat, self.coords_long]
+        return [self.coords_long, self.coords_lat]
