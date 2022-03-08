@@ -23,6 +23,8 @@ class ToWrapper(ToWrapperInterface):
         traffic_monitors = []
         cachegroupMappings = {}
         for cdn in self.__get_cdns():
+            if cdn['name'] == 'ALL':
+                continue
             logging.debug("Getting CDN details for %s", cdn['name'])
             cdn_details = self.__get_cdn_details(cdn['name'])
             for traffic_monitor in cdn_details['trafficMonitors']:
