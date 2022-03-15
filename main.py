@@ -1,13 +1,9 @@
-import os
-
-from ams.BaseService import BaseService
-from traffic_ops.TmWrapper import TmWrapper
-from traffic_ops.ToWrapper import ToWrapper
+from ams.Service import Service
 
 
 def main():
-    wrapper = ToWrapper(os.environ['TO_SERVER'], port=443, user=os.environ['TO_USER'], password=os.environ['TO_PASSWORD'])
-    svc = BaseService(wrapper, TmWrapper())
+    svc = Service()
+    svc.run()
     svc.start()
 
 

@@ -4,8 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    depends_on:
-      - kafka
     environment:
       KAFKA_SERVERS: kafka:9092
       KAFKA_TOPIC: cache_stats
