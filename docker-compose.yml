@@ -10,6 +10,7 @@ services:
       TO_SERVER: ${TO_SERVER}
       TO_USER: ${TO_USER}
       TO_PASSWORD: ${TO_PASSWORD}
+      EL_URL: elasticsearch:9200
   zookeeper:
     image: bitnami/zookeeper:3.6.2
     ports:

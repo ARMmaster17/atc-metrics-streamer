@@ -1,4 +1,4 @@
-FROM python:3.11-rc-alpine
+FROM python:3.10-alpine3.15
 RUN python -m pip install --upgrade pip
 RUN mkdir /app
 WORKDIR /app
