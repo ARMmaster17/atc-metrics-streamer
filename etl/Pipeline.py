@@ -16,8 +16,9 @@ class Pipeline:
         # Start by placing this step at the end of the list
         self.__steps.append(step)
         # Then recalculate the order of the steps
-        if not load_step:
-            self.recalculate_dependency_order(step)
+        # Commenting out because it's not 100% needed and might be causing scheduling issues.
+        # if not load_step:
+        #     self.recalculate_dependency_order(step)
 
     def run(self):
         # Start benchmarking data

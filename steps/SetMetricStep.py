@@ -3,7 +3,7 @@ from etl.PipelineStep import PipelineStep
 
 class SetMetricStep(PipelineStep):
     def __init__(self, key, value):
-        super().__init__("Set-{}".format(key), dependencies=['metric_list'])
+        super().__init__("Set-{}".format(key), dependencies=['metrics_list'])
         self.__key = key
         self.__value = value
 

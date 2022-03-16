@@ -1,5 +1,4 @@
 import logging
-from datetime import datetime, timezone, timedelta
 
 import schedule
 
@@ -12,9 +11,9 @@ from steps.BuildTMListStep import BuildTMListStep
 from steps.BuildTOConnectionInfoStep import BuildTOConnectionInfoStep
 from steps.GetCDNDetailsStep import GetCDNDetailsStep
 from steps.LoadIntoKafkaStep import LoadIntoKafkaStep
-from steps.SetMetricStep import SetMetricStep
 from steps.StepBuilder import StepBuilder
 from steps.TransformDurationCountsStep import TransformDurationCountsStep
+from steps.TransformTimestampsStep import TransformTimestampsStep
 
 
 class Service:
@@ -40,8 +39,7 @@ class Service:
         self.__pipeline.add_step(TransformDurationCountsStep('query_time_ms'))
         self.__pipeline.add_step(TransformDurationCountsStep('stat_span_ms'))
         self.__pipeline.add_step(TransformDurationCountsStep('health_span_ms'))
-        self.__pipeline.add_step(SetMetricStep('check_time', datetime.now(timezone.utc).isoformat()))
-        self.__pipeline.add_step(SetMetricStep('next_check', (datetime.now(timezone.utc) + timedelta(seconds=10)).isoformat()))
+        self.__pipeline.add_step(TransformTimestampsStep())
         self.__pipeline.add_step(BuildObserverDataStep())
         self.__pipeline.add_step(LoadIntoKafkaStep(), load_step=True)
         logging.info("Scheduling pipeline")
