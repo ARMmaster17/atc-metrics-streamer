@@ -14,6 +14,7 @@ from steps.GetCDNDetailsStep import GetCDNDetailsStep
 from steps.LoadIntoKafkaStep import LoadIntoKafkaStep
 from steps.SetMetricStep import SetMetricStep
 from steps.StepBuilder import StepBuilder
+from steps.TransformDurationCountsStep import TransformDurationCountsStep
 
 
 class Service:
@@ -34,6 +35,11 @@ class Service:
                            'connection_count', 'combined_available']
         for step in StepBuilder.build_multi_direct_map_steps(direct_map_vars):
             self.__pipeline.add_step(step)
+        self.__pipeline.add_step(TransformDurationCountsStep('health_time_ms'))
+        self.__pipeline.add_step(TransformDurationCountsStep('stat_time_ms'))
+        self.__pipeline.add_step(TransformDurationCountsStep('query_time_ms'))
+        self.__pipeline.add_step(TransformDurationCountsStep('stat_span_ms'))
+        self.__pipeline.add_step(TransformDurationCountsStep('health_span_ms'))
         self.__pipeline.add_step(SetMetricStep('check_time', datetime.now(timezone.utc).isoformat()))
         self.__pipeline.add_step(SetMetricStep('next_check', (datetime.now(timezone.utc) + timedelta(seconds=10)).isoformat()))
         self.__pipeline.add_step(BuildObserverDataStep())

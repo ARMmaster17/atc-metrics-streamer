@@ -7,7 +7,8 @@ import elasticapm
 class APMWrapper:
     def __init__(self):
         if self.apm_enabled():
-            self.__client = elasticapm.Client(service_name='ams', server_url=os.environ['ES_APM_URL'], secret_token=os.environ['ES_APM_SECRET'])
+            self.__client = elasticapm.Client(service_name='ams', server_url=os.environ['ES_APM_URL'],
+                                              secret_token=os.environ['ES_APM_SECRET'])
             elasticapm.instrument()
             logging.debug('APM enabled')
         else:
@@ -24,4 +25,7 @@ class APMWrapper:
             logging.debug('Ended tracable APM transaction')
 
     def apm_enabled(self):
-        return os.environ['ES_APM_ENABLED'] == 'true'
+        try:
+            return os.environ['ES_APM_ENABLED'] == 'true'
+        except KeyError:
+            return False
