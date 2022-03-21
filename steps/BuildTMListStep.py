@@ -10,5 +10,5 @@ class BuildTMListStep(PipelineStep):
         traffic_monitors = {}
         for cdn in pipeline_context.get_var('cdn_detail_list'):
             for traffic_monitor in pipeline_context.get_var('cdn_detail_list')[cdn].get_traffic_monitors():
-                traffic_monitors[traffic_monitor['hostname']] = TrafficMonitorDTO(traffic_monitor)
+                traffic_monitors[traffic_monitor['hostname']] = TrafficMonitorDTO(traffic_monitor, cdn)
         pipeline_context.add_var('tm_list', traffic_monitors)

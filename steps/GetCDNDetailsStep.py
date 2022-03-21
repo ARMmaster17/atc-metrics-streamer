@@ -12,5 +12,5 @@ class GetCDNDetailsStep(PipelineStep):
         for cdn in pipeline_context.get_var('cdn_list'):
             if cdn['name'] == 'ALL':  # Probing details of the ALL CDN apparently causes a lot of issues.
                 continue
-            cdn_detail_list[cdn['name']] = CDNDetailsDTO(to_context.get_cdn_monitoring_info(cdn_name=cdn['name'])[0])
+            cdn_detail_list[cdn['name']] = CDNDetailsDTO(to_context.get_cdn_monitoring_info(cdn_name=cdn['name'])[0], cdn['name'])
         pipeline_context.add_var('cdn_detail_list', cdn_detail_list)

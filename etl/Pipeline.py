@@ -1,5 +1,6 @@
 import logging
 import time
+import traceback
 
 from etl import PipelineStep
 from etl.PipelineContext import PipelineContext
@@ -32,11 +33,13 @@ class Pipeline:
                 step.run(context)
             except Exception as e:
                 logging.error("Error running step {}: {}".format(step.get_name(), e))
+                traceback.print_exception(type(e), e, e.__traceback__)
+                self.__metrics.capture_exception(e)
                 pipeline_failed = True
                 break
         pipe_bench_end = time.perf_counter()
         logging.info(f"Pipeline took {(pipe_bench_end - pipe_bench_start) * 1000} ms.")
-        self.__metrics.end_transaction('pipeline', 'success' if not pipeline_failed else 'failure')
+        self.__metrics.end_transaction('pipeline', not pipeline_failed)
 
     def recalculate_dependency_order(self, step: PipelineStep):
         dep_steps = [s for s in self.__steps if self.has_dependency(step, s)]

@@ -11,6 +11,7 @@ from steps.BuildTMListStep import BuildTMListStep
 from steps.BuildTOConnectionInfoStep import BuildTOConnectionInfoStep
 from steps.GetCDNDetailsStep import GetCDNDetailsStep
 from steps.LoadIntoKafkaStep import LoadIntoKafkaStep
+from steps.MapIPDataStep import MapIPDataStep
 from steps.StepBuilder import StepBuilder
 from steps.TransformDurationCountsStep import TransformDurationCountsStep
 from steps.TransformTimestampsStep import TransformTimestampsStep
@@ -41,6 +42,7 @@ class Service:
         self.__pipeline.add_step(TransformDurationCountsStep('health_span_ms'))
         self.__pipeline.add_step(TransformTimestampsStep())
         self.__pipeline.add_step(BuildObserverDataStep())
+        self.__pipeline.add_step(MapIPDataStep())
         self.__pipeline.add_step(LoadIntoKafkaStep(), load_step=True)
         logging.info("Scheduling pipeline")
         schedule.every(10).seconds.do(self.run)
