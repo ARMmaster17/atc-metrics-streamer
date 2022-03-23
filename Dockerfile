@@ -1,5 +1,6 @@
 FROM python:3.10-alpine3.15
 RUN python -m pip install --upgrade pip
+RUN apk add --no-cache git
 RUN mkdir /app
 WORKDIR /app
 ADD . /app

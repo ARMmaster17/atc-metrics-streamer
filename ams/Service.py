@@ -1,14 +1,16 @@
 import logging
 
 import schedule
+from watergrid.locks import RedisPipelineLock
+from watergrid.pipelines import HAPipeline
 
-from etl.Pipeline import Pipeline
 from steps.BuildCDNListStep import BuildCDNListStep
 from steps.BuildCacheGroupListStep import BuildCacheGroupListStep
 from steps.BuildMetricsStep import BuildMetricsStep
 from steps.BuildObserverDataStep import BuildObserverDataStep
 from steps.BuildTMListStep import BuildTMListStep
 from steps.BuildTOConnectionInfoStep import BuildTOConnectionInfoStep
+from steps.DebugStep import DebugStep
 from steps.GetCDNDetailsStep import GetCDNDetailsStep
 from steps.LoadIntoKafkaStep import LoadIntoKafkaStep
 from steps.MapIPDataStep import MapIPDataStep
@@ -17,6 +19,7 @@ from steps.TransformDurationCountsStep import TransformDurationCountsStep
 from steps.TransformErrorDataStep import TransformErrorDataStep
 from steps.TransformSummaryInfoStep import TransformSummaryInfoStep
 from steps.TransformTimestampsStep import TransformTimestampsStep
+from util.APMWrapper import ElasticAPMMetricsExporter
 
 
 class Service:
@@ -24,8 +27,20 @@ class Service:
         # Set up logging
         logging.basicConfig(level=logging.INFO)
         logging.info("Initializing pipeline")
-        # Initialize all steps of the pipeline
-        self.__pipeline = Pipeline()
+        # Setup global pipeline lock
+        pipeline_lock = RedisPipelineLock(
+            lock_key='ams-pipeline-lock',
+            redis_host='redis',
+            redis_port=6379,
+            redis_db=0,
+            redis_password=None,
+            lock_timeout=5
+        )
+        # Initialize pipeline
+        self.__pipeline = HAPipeline('ams-pipeline', pipeline_lock)
+        # Set up pipeline configuration
+        #self.__pipeline.add_metrics_exporter(ElasticAPMMetricsExporter())
+        # Set up pipeline steps
         self.__pipeline.add_step(BuildTOConnectionInfoStep())
         self.__pipeline.add_step(BuildCDNListStep())
         self.__pipeline.add_step(GetCDNDetailsStep())
@@ -47,7 +62,8 @@ class Service:
         self.__pipeline.add_step(MapIPDataStep())
         self.__pipeline.add_step(TransformSummaryInfoStep())
         self.__pipeline.add_step(TransformErrorDataStep())
-        self.__pipeline.add_step(LoadIntoKafkaStep(), load_step=True)
+        self.__pipeline.add_step(DebugStep('metrics_list'))
+        #self.__pipeline.add_step(LoadIntoKafkaStep())
         logging.info("Scheduling pipeline")
         schedule.every(10).seconds.do(self.run)
 
