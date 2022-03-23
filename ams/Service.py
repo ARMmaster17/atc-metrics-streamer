@@ -14,6 +14,8 @@ from steps.LoadIntoKafkaStep import LoadIntoKafkaStep
 from steps.MapIPDataStep import MapIPDataStep
 from steps.StepBuilder import StepBuilder
 from steps.TransformDurationCountsStep import TransformDurationCountsStep
+from steps.TransformErrorDataStep import TransformErrorDataStep
+from steps.TransformSummaryInfoStep import TransformSummaryInfoStep
 from steps.TransformTimestampsStep import TransformTimestampsStep
 
 
@@ -43,6 +45,8 @@ class Service:
         self.__pipeline.add_step(TransformTimestampsStep())
         self.__pipeline.add_step(BuildObserverDataStep())
         self.__pipeline.add_step(MapIPDataStep())
+        self.__pipeline.add_step(TransformSummaryInfoStep())
+        self.__pipeline.add_step(TransformErrorDataStep())
         self.__pipeline.add_step(LoadIntoKafkaStep(), load_step=True)
         logging.info("Scheduling pipeline")
         schedule.every(10).seconds.do(self.run)
