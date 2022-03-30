@@ -1,6 +1,6 @@
 import logging
+import os
 
-import schedule
 from watergrid.locks import RedisPipelineLock
 from watergrid.pipelines import HAPipeline
 
@@ -28,18 +28,14 @@ class Service:
         logging.basicConfig(level=logging.INFO)
         logging.info("Initializing pipeline")
         # Setup global pipeline lock
-        pipeline_lock = RedisPipelineLock(
-            lock_key='ams-pipeline-lock',
-            redis_host='redis',
-            redis_port=6379,
-            redis_db=0,
-            redis_password=None,
-            lock_timeout=5
-        )
+        pipeline_lock = RedisPipelineLock(lock_timeout=5)
+        pipeline_lock.set_host('redis')
+        pipeline_lock.connect()
         # Initialize pipeline
         self.__pipeline = HAPipeline('ams-pipeline', pipeline_lock)
         # Set up pipeline configuration
-        #self.__pipeline.add_metrics_exporter(ElasticAPMMetricsExporter())
+        if self.apm_enabled():
+            self.__pipeline.add_metrics_exporter(ElasticAPMMetricsExporter())
         # Set up pipeline steps
         self.__pipeline.add_step(BuildTOConnectionInfoStep())
         self.__pipeline.add_step(BuildCDNListStep())
@@ -62,15 +58,14 @@ class Service:
         self.__pipeline.add_step(MapIPDataStep())
         self.__pipeline.add_step(TransformSummaryInfoStep())
         self.__pipeline.add_step(TransformErrorDataStep())
-        self.__pipeline.add_step(DebugStep('metrics_list'))
+        self.__pipeline.add_step(DebugStep("metrics_list"))
         #self.__pipeline.add_step(LoadIntoKafkaStep())
         logging.info("Scheduling pipeline")
-        schedule.every(10).seconds.do(self.run)
+        self.__pipeline.run_interval(10)
 
-    def start(self):
-        logging.info("Starting pipeline")
-        while True:
-            schedule.run_pending()
-
-    def run(self):
-        self.__pipeline.run()
+    @staticmethod
+    def apm_enabled():
+        try:
+            return os.environ['ES_APM_ENABLED'] == 'true'
+        except KeyError:
+            return False
