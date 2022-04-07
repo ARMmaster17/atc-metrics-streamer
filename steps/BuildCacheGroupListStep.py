@@ -1,14 +1,16 @@
+from watergrid.context import DataContext
+from watergrid.steps import Step
+
 from dto.CacheGroupDTO import CacheGroupDTO
-from etl.PipelineStep import PipelineStep
 
 
-class BuildCacheGroupListStep(PipelineStep):
+class BuildCacheGroupListStep(Step):
     def __init__(self):
-        super().__init__(self.__class__.__name__, dependencies=['cdn_detail_list'], provides=['cache_group_list'])
+        super().__init__(self.__class__.__name__, requires=['cdn_detail_list'], provides=['cache_group_list'])
 
-    def run_step(self, pipeline_context):
+    def run(self, pipeline_context: DataContext):
         cache_groups = {}
-        for cdn in pipeline_context.get_var('cdn_detail_list'):
-            for cache_group in pipeline_context.get_var('cdn_detail_list')[cdn].get_cache_groups():
+        for cdn in pipeline_context.get('cdn_detail_list'):
+            for cache_group in pipeline_context.get('cdn_detail_list')[cdn].get_cache_groups():
                 cache_groups[cache_group['name']] = CacheGroupDTO(cache_group)
-        pipeline_context.add_var('cache_group_list', cache_groups)
+        pipeline_context.set('cache_group_list', cache_groups)

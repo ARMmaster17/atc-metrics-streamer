@@ -1,9 +1,11 @@
-from etl.PipelineStep import PipelineStep
+from watergrid.context import DataContext
+from watergrid.steps import Step
 
-class BuildCDNListStep(PipelineStep):
+
+class BuildCDNListStep(Step):
     def __init__(self):
-        super().__init__(self.__class__.__name__, dependencies=['to_connection_info'], provides=['cdn_list'])
+        super().__init__(self.__class__.__name__, requires=['to_connection_info'], provides=['cdn_list'])
 
-    def run_step(self, pipeline_context):
-        to_context = pipeline_context.get_var('to_connection_info').get_session()
-        pipeline_context.add_var('cdn_list', to_context.get_cdns()[0])
+    def run(self, pipeline_context: DataContext):
+        to_context = pipeline_context.get('to_connection_info').get_session()
+        pipeline_context.set('cdn_list', to_context.get_cdns()[0])

@@ -1,8 +1,9 @@
 import logging
+import os
+from time import sleep
 
-import schedule
+from watergrid.pipelines import StandalonePipeline
 
-from etl.Pipeline import Pipeline
 from steps.BuildCDNListStep import BuildCDNListStep
 from steps.BuildCacheGroupListStep import BuildCacheGroupListStep
 from steps.BuildMetricsStep import BuildMetricsStep
@@ -17,6 +18,7 @@ from steps.TransformDurationCountsStep import TransformDurationCountsStep
 from steps.TransformErrorDataStep import TransformErrorDataStep
 from steps.TransformSummaryInfoStep import TransformSummaryInfoStep
 from steps.TransformTimestampsStep import TransformTimestampsStep
+from util.APMWrapper import ElasticAPMMetricsExporter
 
 
 class Service:
@@ -24,8 +26,12 @@ class Service:
         # Set up logging
         logging.basicConfig(level=logging.INFO)
         logging.info("Initializing pipeline")
-        # Initialize all steps of the pipeline
-        self.__pipeline = Pipeline()
+        # Initialize pipeline
+        self.__pipeline = StandalonePipeline('ams-pipeline')
+        # Set up pipeline configuration
+        if self.apm_enabled():
+            self.__pipeline.add_metrics_exporter(ElasticAPMMetricsExporter())
+        # Set up pipeline steps
         self.__pipeline.add_step(BuildTOConnectionInfoStep())
         self.__pipeline.add_step(BuildCDNListStep())
         self.__pipeline.add_step(GetCDNDetailsStep())
@@ -47,14 +53,15 @@ class Service:
         self.__pipeline.add_step(MapIPDataStep())
         self.__pipeline.add_step(TransformSummaryInfoStep())
         self.__pipeline.add_step(TransformErrorDataStep())
-        self.__pipeline.add_step(LoadIntoKafkaStep(), load_step=True)
+        self.__pipeline.add_step(LoadIntoKafkaStep())
         logging.info("Scheduling pipeline")
-        schedule.every(10).seconds.do(self.run)
-
-    def start(self):
-        logging.info("Starting pipeline")
         while True:
-            schedule.run_pending()
+            self.__pipeline.run()
+            sleep(10)
 
-    def run(self):
-        self.__pipeline.run()
+    @staticmethod
+    def apm_enabled():
+        try:
+            return os.environ['ES_APM_ENABLED'] == 'true'
+        except KeyError:
+            return False
