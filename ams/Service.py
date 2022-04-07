@@ -1,8 +1,8 @@
 import logging
 import os
+from time import sleep
 
-from watergrid.locks import RedisPipelineLock
-from watergrid.pipelines import HAPipeline
+from watergrid.pipelines import StandalonePipeline
 
 from steps.BuildCDNListStep import BuildCDNListStep
 from steps.BuildCacheGroupListStep import BuildCacheGroupListStep
@@ -10,7 +10,6 @@ from steps.BuildMetricsStep import BuildMetricsStep
 from steps.BuildObserverDataStep import BuildObserverDataStep
 from steps.BuildTMListStep import BuildTMListStep
 from steps.BuildTOConnectionInfoStep import BuildTOConnectionInfoStep
-from steps.DebugStep import DebugStep
 from steps.GetCDNDetailsStep import GetCDNDetailsStep
 from steps.LoadIntoKafkaStep import LoadIntoKafkaStep
 from steps.MapIPDataStep import MapIPDataStep
@@ -27,12 +26,8 @@ class Service:
         # Set up logging
         logging.basicConfig(level=logging.INFO)
         logging.info("Initializing pipeline")
-        # Setup global pipeline lock
-        pipeline_lock = RedisPipelineLock(lock_timeout=5)
-        pipeline_lock.set_host('redis')
-        pipeline_lock.connect()
         # Initialize pipeline
-        self.__pipeline = HAPipeline('ams-pipeline', pipeline_lock)
+        self.__pipeline = StandalonePipeline('ams-pipeline')
         # Set up pipeline configuration
         if self.apm_enabled():
             self.__pipeline.add_metrics_exporter(ElasticAPMMetricsExporter())
@@ -58,10 +53,11 @@ class Service:
         self.__pipeline.add_step(MapIPDataStep())
         self.__pipeline.add_step(TransformSummaryInfoStep())
         self.__pipeline.add_step(TransformErrorDataStep())
-        self.__pipeline.add_step(DebugStep("metrics_list"))
-        #self.__pipeline.add_step(LoadIntoKafkaStep())
+        self.__pipeline.add_step(LoadIntoKafkaStep())
         logging.info("Scheduling pipeline")
-        self.__pipeline.run_interval(10)
+        while True:
+            self.__pipeline.run()
+            sleep(10)
 
     @staticmethod
     def apm_enabled():
